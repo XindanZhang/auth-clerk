@@ -1,10 +1,15 @@
-import { useSignIn } from '@clerk/clerk-expo'
+import { useSignIn, useOAuth } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
+import * as WebBrowser from 'expo-web-browser'
+import * as Linking from 'expo-linking'
 import React from 'react'
+
+WebBrowser.maybeCompleteAuthSession()
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn()
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' })
   const router = useRouter()
 
   const [emailAddress, setEmailAddress] = React.useState('')
@@ -14,40 +19,48 @@ export default function Page() {
   const onSignInPress = async () => {
     if (!isLoaded) return
 
-    // Start the sign-in process using the email and password provided
     try {
       const signInAttempt = await signIn.create({
         identifier: emailAddress,
         password,
       })
 
-      // If sign-in process is complete, set the created session as active
-      // and redirect the user
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId })
         router.replace('/')
       } else {
-        // If the status isn't complete, check why. User might need to
-        // complete further steps.
         console.error(JSON.stringify(signInAttempt, null, 2))
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
+      console.error(JSON.stringify(err, null, 2))
+    }
+  }
+
+  const onGooglePress = async () => {
+    try {
+      const redirectUrl = Linking.createURL('/')
+      const { createdSessionId, setActive: setActiveOauth } = await startOAuthFlow({ redirectUrl })
+      if (createdSessionId && setActiveOauth) {
+        await setActiveOauth({ session: createdSessionId })
+        router.replace('/')
+      }
+    } catch (err) {
       console.error(JSON.stringify(err, null, 2))
     }
   }
 
   return (
-    <View>
-      <Text>Sign in</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign in</Text>
       <TextInput
+        style={styles.input}
         autoCapitalize="none"
         value={emailAddress}
         placeholder="Enter email"
         onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
       />
       <TextInput
+        style={styles.input}
         value={password}
         placeholder="Enter password"
         secureTextEntry={true}
@@ -56,11 +69,69 @@ export default function Page() {
       <TouchableOpacity onPress={onSignInPress}>
         <Text>Continue</Text>
       </TouchableOpacity>
-      <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+
+      <TouchableOpacity style={styles.googleButton} onPress={onGooglePress}>
+        <Text style={styles.googleButtonText}>Continue with Google</Text>
+      </TouchableOpacity>
+
+      <View style={styles.signUpContainer}>
         <Link href="/sign-up">
-          <Text>Sign up</Text>
+          <Text style={styles.signUpText}>Sign up</Text>
         </Link>
       </View>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#f8f9fa",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "black",
+  },
+  input: {
+    width: "100%",
+    height: 50,
+    borderWidth: 1,
+    borderColor: "lightgrey",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    backgroundColor: "white",
+  },
+  googleButton: {
+    marginTop: 10,
+    width: "100%",
+    borderRadius: 10,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
+    backgroundColor: "white",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  googleButtonText: {
+    color: "#202124",
+    fontWeight: "600",
+  },
+  signUpContainer: {
+    flexDirection: "row",
+    marginTop: 15,
+  },
+  text: {
+    fontSize: 16,
+    color: "grey",
+  },
+  signUpText: {
+    fontSize: 16,
+    color: "#007bff",
+    fontWeight: "bold",
+  },
+})
