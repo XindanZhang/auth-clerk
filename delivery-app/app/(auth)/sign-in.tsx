@@ -1,10 +1,11 @@
 import { useSignIn, useOAuth } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
-import { Text, TextInput, TouchableOpacity, View, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native'
+import { Text, TextInput, TouchableOpacity, View, StyleSheet, Platform } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import React from 'react'
 import { Image } from 'expo-image'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -50,12 +51,20 @@ export default function Page() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.select({ ios: 64, android: 0, default: 0 }) as number}
-    >
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <View style={styles.screen}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={8}
+        keyboardOpeningTime={0}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        decelerationRate="fast"
+        keyboardDismissMode="on-drag"
+        bounces
+        alwaysBounceVertical
+      >
         <Text style={styles.header}>Sign in to Delivery-app</Text>
         <Text style={styles.subheader}>Welcome back! Please sign in to continue.</Text>
 
@@ -102,8 +111,8 @@ export default function Page() {
             <Text style={styles.footerLink}> Sign up</Text>
           </Link>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   )
 }
 
@@ -114,11 +123,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingVertical: 24,
     width: '100%',
     maxWidth: 560,
     alignSelf: 'center',
-    flexGrow: 1,
+    minHeight: '100%',
     justifyContent: 'center',
   },
   header: {

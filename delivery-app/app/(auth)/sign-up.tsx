@@ -1,7 +1,8 @@
 import * as React from 'react'
-import { Text, TextInput, TouchableOpacity, View, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native'
+import { Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
 import { useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()
@@ -42,8 +43,17 @@ export default function SignUpScreen() {
 
   if (pendingVerification) {
     return (
-      <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View style={styles.screen}>
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.content}
+          enableOnAndroid
+          enableAutomaticScroll
+          extraScrollHeight={24}
+          keyboardOpeningTime={0}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          overScrollMode="never"
+        >
           <Text style={styles.subheader}>Enter the code we sent to your email</Text>
 
           <View style={styles.fieldGroup}>
@@ -60,14 +70,26 @@ export default function SignUpScreen() {
           <TouchableOpacity style={styles.primaryButton} onPress={onVerifyPress}>
             <Text style={styles.primaryButtonText}>Verify</Text>
           </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </View>
     )
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <View style={styles.screen}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.content}
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={8}
+        keyboardOpeningTime={0}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        decelerationRate="fast"
+        keyboardDismissMode="on-drag"
+        bounces
+        alwaysBounceVertical
+      >
         <Text style={styles.subheader}>Create your Delivery-app account</Text>
 
         <View style={styles.fieldGroup}>
@@ -103,8 +125,8 @@ export default function SignUpScreen() {
             <Text style={styles.footerLink}> Sign in</Text>
           </Link>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   )
 }
 
@@ -115,11 +137,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingVertical: 24,
     width: '100%',
     maxWidth: 560,
     alignSelf: 'center',
-    flexGrow: 1,
+    minHeight: '100%',
     justifyContent: 'center',
   },
   subheader: {
