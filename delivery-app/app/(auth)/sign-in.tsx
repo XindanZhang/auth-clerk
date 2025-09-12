@@ -1,9 +1,10 @@
 import { useSignIn, useOAuth } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
-import { Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
+import { Text, TextInput, TouchableOpacity, View, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import React from 'react'
+import { Image } from 'expo-image'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -15,7 +16,6 @@ export default function Page() {
   const [emailAddress, setEmailAddress] = React.useState('')
   const [password, setPassword] = React.useState('')
 
-  // Handle the submission of the sign-in form
   const onSignInPress = async () => {
     if (!isLoaded) return
 
@@ -50,88 +50,161 @@ export default function Page() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
-      <TextInput
-        style={styles.input}
-        autoCapitalize="none"
-        value={emailAddress}
-        placeholder="Enter email"
-        onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-      />
-      <TextInput
-        style={styles.input}
-        value={password}
-        placeholder="Enter password"
-        secureTextEntry={true}
-        onChangeText={(password) => setPassword(password)}
-      />
-      <TouchableOpacity onPress={onSignInPress}>
-        <Text>Continue</Text>
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.select({ ios: 64, android: 0, default: 0 }) as number}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.header}>Sign in to Delivery-app</Text>
+        <Text style={styles.subheader}>Welcome back! Please sign in to continue.</Text>
 
-      <TouchableOpacity style={styles.googleButton} onPress={onGooglePress}>
-        <Text style={styles.googleButtonText}>Continue with Google</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.oauthButton} onPress={onGooglePress}>
+          <Image source={require('@/assets/images/google-g-logo.png')} style={styles.oauthIcon} contentFit="contain" />
+          <Text style={styles.oauthLabel}>Continue with Google</Text>
+        </TouchableOpacity>
 
-      <View style={styles.signUpContainer}>
-        <Link href="/sign-up">
-          <Text style={styles.signUpText}>Sign up</Text>
-        </Link>
-      </View>
-    </View>
+        <View style={styles.dividerRow}>
+          <View style={styles.hr} />
+          <Text style={styles.or}>or</Text>
+          <View style={styles.hr} />
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={emailAddress}
+            placeholder="Enter your email"
+            onChangeText={(v) => setEmailAddress(v)}
+          />
+        </View>
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            placeholder="Enter your password"
+            secureTextEntry
+            onChangeText={(v) => setPassword(v)}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.primaryButton} onPress={onSignInPress}>
+          <Text style={styles.primaryButtonText}>Continue</Text>
+        </TouchableOpacity>
+
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Don’t have an account?</Text>
+          <Link href="/sign-up">
+            <Text style={styles.footerLink}> Sign up</Text>
+          </Link>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#fff',
   },
-  title: {
+  content: {
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  header: {
     fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "black",
+    fontWeight: '800',
+    textAlign: 'center',
+    color: '#111',
+  },
+  subheader: {
+    marginTop: 8,
+    marginBottom: 16,
+    textAlign: 'center',
+    color: '#6b7280',
+  },
+  oauthButton: {
+    borderRadius: 10,
+    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    backgroundColor: '#fff',
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  oauthIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
+  },
+  oauthLabel: {
+    color: '#111827',
+    fontWeight: '600',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 16,
+  },
+  hr: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e5e7eb',
+  },
+  or: {
+    color: '#6b7280',
+  },
+  fieldGroup: {
+    marginBottom: 12,
+  },
+  label: {
+    marginBottom: 6,
+    color: '#374151',
+    fontWeight: '600',
   },
   input: {
-    width: "100%",
-    height: 50,
-    borderWidth: 1,
-    borderColor: "lightgrey",
+    height: 48,
     borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    backgroundColor: "white",
-  },
-  googleButton: {
-    marginTop: 10,
-    width: "100%",
-    borderRadius: 10,
-    borderColor: "#e0e0e0",
     borderWidth: 1,
-    backgroundColor: "white",
-    paddingVertical: 12,
-    alignItems: "center",
+    borderColor: '#e5e7eb',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
   },
-  googleButtonText: {
-    color: "#202124",
-    fontWeight: "600",
+  primaryButton: {
+    marginTop: 12,
+    height: 48,
+    borderRadius: 10,
+    backgroundColor: '#111',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  signUpContainer: {
-    flexDirection: "row",
-    marginTop: 15,
+  primaryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
   },
-  text: {
-    fontSize: 16,
-    color: "grey",
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 16,
   },
-  signUpText: {
-    fontSize: 16,
-    color: "#007bff",
-    fontWeight: "bold",
+  footerText: {
+    color: '#6b7280',
+  },
+  footerLink: {
+    color: '#111',
+    fontWeight: '700',
   },
 })
