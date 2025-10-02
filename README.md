@@ -1,1 +1,1 @@
-A quick start to build auth for mobile app with clerk.
+A quick start to add auth for mobile app with clerk.
